@@ -13,8 +13,6 @@ import java.util.List;
 public class ServerApplication {
 
 	public static void main(String[] args) {
-		String token = UserRepository.getRepository().AddUser("test", "test");
-		UserRepository.getRepository().FindUserByToken(token).addTask(new Task("task", "task", "11.05.2025 21:48", 76134));
 		SpringApplication.run(ServerApplication.class, args);
 	}
 

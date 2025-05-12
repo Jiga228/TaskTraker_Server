@@ -1,6 +1,7 @@
 package com.Samsung.TaskTracker;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class UserRepository {
     private static UserRepository Self = null;
@@ -47,10 +48,19 @@ public class UserRepository {
                     return "null";
             }
 
-            // Generate TOKEN
-            User newUser = new User(Login, Password, "TEST");
+            String token = GetNewToken(Login, Password);
+            User newUser = new User(Login, Password, token);
             repository.add(newUser);
             return newUser.getToken();
         }
+    }
+
+    private String GetNewToken(String login, String password) {
+        Random rand = new Random();
+        int key1 = login.hashCode();
+        int key2 = password.hashCode();
+        int key3 = rand.nextInt();
+        int token = key1 ^ key2 ^ key3;
+        return Integer.toString(token);
     }
 }
