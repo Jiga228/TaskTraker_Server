@@ -1,4 +1,4 @@
-package com.Samsung.TaskTracker_Server.Repository;
+package com.Samsung.TaskTraker_Server.Repository;
 
 import java.io.Serializable;
 import java.util.Objects;

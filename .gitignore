@@ -33,6 +33,6 @@ build/
 .vscode/
 
 ###API_KEYS###
-src/main/java/com/Samsung/TaskTracker_Server/Repository/API_KEYS.java
+src/main/java/com/Samsung/TaskTraker_Server/Repository/API_KEYS.java
 
 

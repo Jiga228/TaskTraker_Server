@@ -1,4 +1,4 @@
-package com.Samsung.TaskTracker_Server.Repository;
+package com.Samsung.TaskTraker_Server.Repository;
 
 import java.io.*;
 import java.sql.*;
@@ -96,7 +96,6 @@ public class DataBase {
         saveUser_stmt.setString(1, user.getLogin());
         saveUser_stmt.setString(2, user.getPassword());
         saveUser_stmt.setString(3, Serialize(user.getTaskList()));
-        //saveUser_stmt.executeUpdate();
         TaskDBList.add(new TaskDB(saveUser_stmt));
     }
 

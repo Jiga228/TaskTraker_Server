@@ -1,11 +1,9 @@
-package com.Samsung.TaskTracker_Server;
+package com.Samsung.TaskTraker_Server;
 
-import com.Samsung.TaskTracker_Server.Repository.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.Samsung.TaskTraker_Server.Repository.*;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,10 +14,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/")
 @SpringBootApplication
-public class TaskTrackerServerApplication {
+public class TaskTrakerServerApplication {
     private static volatile boolean isRunning = true;
     public static void main(String[] args) {
-        ConfigurableApplicationContext context = SpringApplication.run(TaskTrackerServerApplication.class, args);
+        ConfigurableApplicationContext context = SpringApplication.run(TaskTrakerServerApplication.class, args);
 
         while (isRunning) {
             try {

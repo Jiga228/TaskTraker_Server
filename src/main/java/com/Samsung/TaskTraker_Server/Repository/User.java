@@ -1,4 +1,4 @@
-package com.Samsung.TaskTracker_Server.Repository;
+package com.Samsung.TaskTraker_Server.Repository;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class User {
 
     public void addTask(Task task) {
         if(TaskList.contains(task)) {
-            TaskList.remove(task); // Просто удаляем потаму, что равнение идёт только по ID
+            TaskList.remove(task); // Просто удаляем потаму, что cравнение идёт только по ID
             TaskList.add(task);
         }
         else {

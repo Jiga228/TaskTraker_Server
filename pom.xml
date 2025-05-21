@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.Samsung</groupId>
-	<artifactId>TaskTracker_Server</artifactId>
+	<artifactId>TaskTraker_Server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>TaskTracker_Server</name>
+	<name>TaskTraker_Server</name>
 	<description>Demo project for Spring Boot</description>
 	<url/>
 	<licenses>

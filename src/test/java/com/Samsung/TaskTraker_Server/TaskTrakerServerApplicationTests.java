@@ -1,10 +1,10 @@
-package com.Samsung.TaskTracker_Server;
+package com.Samsung.TaskTraker_Server;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class TaskTrackerServerApplicationTests {
+class TaskTrakerServerApplicationTests {
 
 	@Test
 	void contextLoads() {
