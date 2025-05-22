@@ -9,6 +9,8 @@ public class UserRepository {
 
     private final List<User> UserCache = new ArrayList<>();
 
+    private UserRepository() {}
+
     public static synchronized UserRepository getRepository() {
         if (instance == null) {
             instance = new UserRepository();
@@ -17,6 +19,16 @@ public class UserRepository {
     }
 
     public User AddUser(String login, String password) throws SQLException {
+        for (User i : UserCache) {
+            if(i.getLogin().equals(login)) {
+                return null;
+            }
+        }
+
+        User find = DataBase.getInstance().FindUser(login);
+        if(find != null)
+            return null;
+
         User user = new User(0, login, password);
 
         DataBase.getInstance().SaveUser(user);

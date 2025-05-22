@@ -67,10 +67,15 @@ public class TaskTrakerServerApplication {
     String SingUp(@RequestParam(name = "login", defaultValue = "null") String login, @RequestParam(name = "password", defaultValue = "null") String pass) {
         if (login.length() > 20 || pass.length() > 20)
             return "{\n\t\"status\":\"big\",\n\t\"token\":\"null\"\n}";
-        if (login.equals("null") || pass.equals("null"))
+        else if(login.isEmpty() || pass.isEmpty())
+            return "{\n\t\"status\":\"small\",\n\t\"token\":\"null\"\n}";
+        else if (login.equals("null") || pass.equals("null"))
             return "{\n\t\"status\":\"error\",\n\t\"token\":\"null\"\n}";
         try {
-            User token = UserRepository.getRepository().AddUser(login, pass);
+            User user = UserRepository.getRepository().AddUser(login, pass);
+            if(user == null)
+                return "{\n\t\"status\":\"error\"\n}";
+
             return "{\n\t\"status\":\"ok\"\n}";
         } catch (SQLException e) {
             return "{\n\t\"status\":\"error\"\n}";

@@ -119,7 +119,8 @@ public class DataBase {
         PreparedStatement getUser_stmt = connection.prepareStatement("SELECT * FROM user WHERE login = ?");
         getUser_stmt.setString(1, login);
         ResultSet resultSet = getUser_stmt.executeQuery();
-        resultSet.next();
+        if(!resultSet.next())
+            return null;
 
         int id = resultSet.getInt(1);
         String pass = resultSet.getNString(3);
