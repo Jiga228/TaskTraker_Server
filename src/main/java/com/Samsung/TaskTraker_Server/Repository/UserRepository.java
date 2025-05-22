@@ -47,6 +47,8 @@ public class UserRepository {
         }
 
         User loadUser = DataBase.getInstance().FindUser(login);
+        if(loadUser == null)
+            return null;
         if(UserCache.size() >= MAX_COUNT_USERS_IN_CACHE)
             UserCache.remove(0);
         UserCache.add(loadUser);
