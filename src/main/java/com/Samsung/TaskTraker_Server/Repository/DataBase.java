@@ -28,14 +28,12 @@ public class DataBase {
     private static DataBase instance;
     private final Connection connection;
     private final List<TaskDB> TaskDBList = new ArrayList<>();
-    private final List<User> DataBaseCache = new ArrayList<>();
     private final Timer UpdateDBTimer = new Timer();
 
     public void close() {
         UpdateDBTimer.cancel();
         for (TaskDB i : TaskDBList)
             i.execute();
-        DataBaseCache.clear();
         TaskDBList.clear();
         try {
             connection.close();
@@ -58,7 +56,6 @@ public class DataBase {
             public void run() {
                 for (TaskDB i : TaskDBList)
                     i.execute();
-                DataBaseCache.clear();
                 TaskDBList.clear();
             }
         }, 1_800_000,1_800_000);
@@ -99,8 +96,7 @@ public class DataBase {
         saveUser_stmt.setString(1, user.getLogin());
         saveUser_stmt.setString(2, user.getPassword());
         saveUser_stmt.setString(3, Serialize(user.getTaskList()));
-        TaskDBList.add(new TaskDB(saveUser_stmt));
-        DataBaseCache.add(user);
+        saveUser_stmt.executeUpdate();
     }
 
     public void UpdateTaskList(User user) throws SQLException {
@@ -111,10 +107,6 @@ public class DataBase {
     }
 
     public User FindUser(String login) throws SQLException {
-        for (User i : DataBaseCache) {
-            if(i.getLogin().equals(login))
-                return i;
-        }
 
         PreparedStatement getUser_stmt = connection.prepareStatement("SELECT * FROM user WHERE login = ?");
         getUser_stmt.setString(1, login);
