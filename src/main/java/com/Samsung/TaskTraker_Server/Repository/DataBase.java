@@ -1,40 +1,13 @@
 package com.Samsung.TaskTraker_Server.Repository;
 
-import java.io.*;
 import java.sql.*;
 import java.util.*;
 
 public class DataBase {
-    private final Object synhronizedDataBase = new Object();
-
-    private class TaskDB {
-        private PreparedStatement statement;
-
-        public TaskDB(PreparedStatement statement) {
-            this.statement = statement;
-        }
-
-        public void execute() {
-            try {
-                synchronized (synhronizedDataBase) {
-                    statement.executeUpdate();
-                }
-            } catch (SQLException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-    }
-
     private static DataBase instance;
     private final Connection connection;
-    private final List<TaskDB> TaskDBList = new ArrayList<>();
-    private final Timer UpdateDBTimer = new Timer();
 
     public void close() {
-        UpdateDBTimer.cancel();
-        for (TaskDB i : TaskDBList)
-            i.execute();
-        TaskDBList.clear();
         try {
             connection.close();
         } catch (SQLException e) {
@@ -50,15 +23,6 @@ public class DataBase {
             System.out.println("[!] DB: " + e.getMessage());
             throw new RuntimeException(e);
         }
-
-        UpdateDBTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                for (TaskDB i : TaskDBList)
-                    i.execute();
-                TaskDBList.clear();
-            }
-        }, 1_800_000,1_800_000);
     }
 
     public static DataBase getInstance() {
@@ -68,47 +32,74 @@ public class DataBase {
         return instance;
     }
 
-    private static String Serialize(List<Task> task) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            ObjectOutputStream serialize = new ObjectOutputStream(baos);
-            serialize.writeObject(task);
-            serialize.flush();
-            return Base64.getEncoder().encodeToString(baos.toByteArray());
-        } catch (IOException e) {
-            System.out.println("[!] DB: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static List<Task> Deserialize(String bytes) {
-        byte[] data = Base64.getDecoder().decode(bytes);
-        try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
-            return (ArrayList<Task>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            System.out.println("[!] DB: " + e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
     public void SaveUser(User user) throws SQLException {
-        PreparedStatement saveUser_stmt = connection.prepareStatement("INSERT INTO user (login, password, task_list) VALUE (?, ?, ?)");
+        PreparedStatement saveUser_stmt = connection.prepareStatement("INSERT INTO users(login, password) VALUE (?, ?)");
         saveUser_stmt.setString(1, user.getLogin());
         saveUser_stmt.setString(2, user.getPassword());
-        saveUser_stmt.setString(3, Serialize(user.getTaskList()));
         saveUser_stmt.executeUpdate();
     }
 
-    public void UpdateTaskList(User user) throws SQLException {
-        PreparedStatement updateTask_stmt = connection.prepareStatement("UPDATE user SET task_list = ? WHERE token = ?");
-        updateTask_stmt.setString(1, Serialize(user.getTaskList()));
-        updateTask_stmt.setLong(2, user.getID());
-        TaskDBList.add(new TaskDB(updateTask_stmt));
+    public void AddTask(Task task, User user) throws SQLException {
+        PreparedStatement addTask = connection.prepareStatement("INSERT INTO tasks(ID," +
+                                                             " TaskName," +
+                                                             " TaskDescription," +
+                                                             " TaskDate," +
+                                                             " TaskTime," +
+                                                             " UserOwner)" +
+                                                             " VALUE (?, ?, ?, ?, ?, ?)");
+
+        addTask.setLong(1, task.getID());
+        addTask.setString(2, task.getTaskName());
+        addTask.setString(3, task.getTaskDescription());
+        addTask.setString(4, task.getTaskDate());
+        addTask.setString(5, task.getTaskTime());
+        addTask.setLong(6, user.getID());
+        addTask.executeUpdate();
+    }
+
+    public void UpdateTask(Task task, User user) throws SQLException {
+        PreparedStatement addTask = connection.prepareStatement("UPDATE tasks SET TaskName = ?," +
+                                                                     " TaskDescription = ?," +
+                                                                     " TaskDate = ?," +
+                                                                     " TaskTime = ?" +
+                                                                     " WHERE UserOwner = ? and ID = ?");
+
+        addTask.setString(1, task.getTaskName());
+        addTask.setString(2, task.getTaskDescription());
+        addTask.setString(3, task.getTaskDate());
+        addTask.setString(4, task.getTaskTime());
+        addTask.setLong(5, user.getID());
+        addTask.setLong(6, task.getID());
+        addTask.executeUpdate(); // <---------
+    }
+
+    public void RemoveTask(long taskID, User user) throws SQLException {
+        PreparedStatement remove = connection.prepareStatement("DELETE FROM tasks WHERE ID = ? AND UserOwner = ?");
+        remove.setLong(1, taskID);
+        remove.setLong(2, user.getID());
+        remove.executeUpdate();
+    }
+
+    public List<Task> getTaskList(User user) throws SQLException {
+        PreparedStatement findTasks = connection.prepareStatement("SELECT * FROM tasks WHERE UserOwner = ?");
+        findTasks.setInt(1, user.getID());
+        ResultSet result = findTasks.executeQuery();
+
+        List<Task> taskList = new ArrayList<>();
+        while(result.next()) {
+            Task task = new Task(result.getLong(1),     // dbID
+                                 result.getLong(2),     // ID
+                                 result.getString(3),   // TaskName
+                                 result.getString(4),   // TaskDescription
+                                 result.getString(5),   // TaskDate
+                                 result.getString(6));  // TaskTime
+            taskList.add(task);
+        }
+        return taskList;
     }
 
     public User FindUser(String login) throws SQLException {
-
-        PreparedStatement getUser_stmt = connection.prepareStatement("SELECT * FROM user WHERE login = ?");
+        PreparedStatement getUser_stmt = connection.prepareStatement("SELECT * FROM users WHERE login = ?");
         getUser_stmt.setString(1, login);
         ResultSet resultSet = getUser_stmt.executeQuery();
         if(!resultSet.next())
@@ -116,8 +107,7 @@ public class DataBase {
 
         int id = resultSet.getInt(1);
         String pass = resultSet.getNString(3);
-        List<Task> taskList = Deserialize(resultSet.getNString(4));
 
-        return new User(id, login, pass, taskList);
+        return new User(id, login, pass);
     }
 }

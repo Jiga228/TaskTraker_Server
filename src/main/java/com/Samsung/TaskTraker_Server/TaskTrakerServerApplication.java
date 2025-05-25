@@ -57,6 +57,7 @@ public class TaskTrakerServerApplication {
                 else
                     return "{\n\t\"status\":\"ok\"\n}";
             } catch (SQLException e) {
+                System.out.println(e.getMessage());
                 return "{\n\t\"status\":\"error\"\n}";
             }
         }
@@ -78,6 +79,7 @@ public class TaskTrakerServerApplication {
 
             return "{\n\t\"status\":\"ok\"\n}";
         } catch (SQLException e) {
+            System.out.println(e.getMessage());
             return "{\n\t\"status\":\"error\"\n}";
         }
     }
@@ -91,19 +93,20 @@ public class TaskTrakerServerApplication {
                 User user = UserRepository.getRepository().getUserByLogin(login);
 
                 if (user == null || !user.getPassword().equals(pass))
-                    return new Task(0, null, null, null, null);
+                    return new Task(0, 0, null, null, null, null);
 
-                List<Task> taskList = user.getTaskList();
+                List<Task> taskList = DataBase.getInstance().getTaskList(user);
 
                 for (Task i : taskList) {
                     if (i.getID() == taskID)
                         return i;
                 }
             } catch (SQLException e) {
-                return new Task(0, null, null, null, null);
+                System.out.println(e.getMessage());
+                return new Task(0, 0, null, null, null, null);
             }
         }
-        return new Task(0, null, null, null, null);
+        return new Task(0, 0, null, null, null, null);
     }
 
     @GetMapping("/user/task/list")
@@ -117,14 +120,15 @@ public class TaskTrakerServerApplication {
                 if (user == null || !user.getPassword().equals(pass))
                     return new ArrayList<>();
                 else
-                    return user.getTaskList();
+                    return DataBase.getInstance().getTaskList(user);
             } catch (SQLException e) {
+                System.out.println(e.getMessage());
                 return new ArrayList<>();
             }
         }
     }
 
-    @PostMapping("/user/task/edit")
+    @PostMapping("/user/task/add")
     public void addUserTask(@RequestParam(value = "login", defaultValue = "null") String login,
                             @RequestParam(value = "password", defaultValue = "null") String pass,
                             @RequestBody Task task) {
@@ -133,8 +137,25 @@ public class TaskTrakerServerApplication {
                 User user = UserRepository.getRepository().getUserByLogin(login);
                 if (user == null || !user.getPassword().equals(pass))
                     return;
-                user.addTask(task);
-            } catch (SQLException ignored) {
+                DataBase.getInstance().AddTask(task, user);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+
+    @PostMapping("/user/task/edit")
+    public void editUserTask(@RequestParam(value = "login", defaultValue = "null") String login,
+                            @RequestParam(value = "password", defaultValue = "null") String pass,
+                            @RequestBody Task task) {
+        if (!login.equals("null") && !pass.equals("null") && task != null) {
+            try {
+                User user = UserRepository.getRepository().getUserByLogin(login);
+                if (user == null || !user.getPassword().equals(pass))
+                    return;
+                DataBase.getInstance().UpdateTask(task, user);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -148,8 +169,9 @@ public class TaskTrakerServerApplication {
                 User user = UserRepository.getRepository().getUserByLogin(login);
                 if (user == null || !user.getPassword().equals(pass))
                     return;
-                user.removeTask(id);
-            } catch (SQLException ignore) {
+                DataBase.getInstance().RemoveTask(id, user);
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
             }
         }
     }

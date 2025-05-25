@@ -1,21 +1,26 @@
 package com.Samsung.TaskTraker_Server.Repository;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.Objects;
 
 public class Task implements Serializable {
+    @JsonIgnore
+    private final long dbID;
     private final long ID;
     private final String TaskName;
     private final String TaskDescription;
     private final String TaskDate;
     private final String TaskTime;
 
-    public Task(long id, String taskName, String taskDescription, String taskDate, String taskTime) {
+    public Task(long dbID, long id, String taskName, String taskDescription, String taskDate, String taskTime) {
         this.TaskName = taskName;
         this.TaskDescription = taskDescription;
         this.TaskDate = taskDate;
         this.TaskTime = taskTime;
         this.ID = id;
+        this.dbID = dbID;
     }
 
     public long getID() {
@@ -42,11 +47,11 @@ public class Task implements Serializable {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return ID == task.ID;
+        return dbID == task.dbID && ID == task.ID;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(ID, TaskName, TaskDescription, TaskDate, TaskTime);
+        return Objects.hash(dbID, ID, TaskName, TaskDescription, TaskDate, TaskTime);
     }
 }
