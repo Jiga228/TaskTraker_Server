@@ -1,4 +1,4 @@
-package com.Samsung.TaskTraker_Server.Repository;
+package com.Samsung.TaskTraker_Server.Models;
 import java.util.Objects;
 
 public class User {

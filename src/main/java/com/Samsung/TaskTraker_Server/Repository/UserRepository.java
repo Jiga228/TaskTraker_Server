@@ -1,5 +1,7 @@
 package com.Samsung.TaskTraker_Server.Repository;
 
+import com.Samsung.TaskTraker_Server.Models.User;
+
 import java.sql.SQLException;
 import java.util.*;
 
@@ -29,9 +31,7 @@ public class UserRepository {
         if(find != null)
             return null;
 
-        User user = new User(0, login, password);
-
-        DataBase.getInstance().SaveUser(user);
+        User user = DataBase.getInstance().SaveUser(login, password);
         if(UserCache.size() >= MAX_COUNT_USERS_IN_CACHE)
             UserCache.remove(0);
         UserCache.add(user);

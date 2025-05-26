@@ -1,5 +1,9 @@
 package com.Samsung.TaskTraker_Server.Repository;
 
+import com.Samsung.TaskTraker_Server.API_KEYS;
+import com.Samsung.TaskTraker_Server.Models.Task;
+import com.Samsung.TaskTraker_Server.Models.User;
+
 import java.sql.*;
 import java.util.*;
 
@@ -32,11 +36,18 @@ public class DataBase {
         return instance;
     }
 
-    public void SaveUser(User user) throws SQLException {
+    public User SaveUser(String login, String password) throws SQLException {
         PreparedStatement saveUser_stmt = connection.prepareStatement("INSERT INTO users(login, password) VALUE (?, ?)");
-        saveUser_stmt.setString(1, user.getLogin());
-        saveUser_stmt.setString(2, user.getPassword());
+        saveUser_stmt.setString(1, login);
+        saveUser_stmt.setString(2, password);
         saveUser_stmt.executeUpdate();
+
+        PreparedStatement findID = connection.prepareStatement("SELECT id FROM users WHERE login = ?");
+        findID.setString(1, login);
+        ResultSet newID = findID.executeQuery();
+
+        newID.next();
+        return new User(newID.getInt(1), login, password);
     }
 
     public void AddTask(Task task, User user) throws SQLException {

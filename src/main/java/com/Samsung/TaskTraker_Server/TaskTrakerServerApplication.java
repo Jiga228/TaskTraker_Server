@@ -1,5 +1,7 @@
 package com.Samsung.TaskTraker_Server;
 
+import com.Samsung.TaskTraker_Server.Models.Task;
+import com.Samsung.TaskTraker_Server.Models.User;
 import com.Samsung.TaskTraker_Server.Repository.*;
 import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
