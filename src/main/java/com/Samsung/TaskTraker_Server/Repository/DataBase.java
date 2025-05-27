@@ -91,6 +91,13 @@ public class DataBase {
         remove.executeUpdate();
     }
 
+    public void UpdatePassword(String password, int userID) throws SQLException {
+        PreparedStatement update = connection.prepareStatement("UPDATE users SET password = ? WHERE id = ?");
+        update.setString(1, password);
+        update.setInt(2, userID);
+        update.executeUpdate();
+    }
+
     public List<Task> getTaskList(User user) throws SQLException {
         PreparedStatement findTasks = connection.prepareStatement("SELECT * FROM tasks WHERE UserOwner = ?");
         findTasks.setInt(1, user.getID());

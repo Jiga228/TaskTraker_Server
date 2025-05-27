@@ -86,6 +86,26 @@ public class TaskTrakerServerApplication {
         }
     }
 
+    @PostMapping("/user/ChangePassword")
+    public String editUserPassword(@RequestParam(name = "oldPassword", defaultValue = "") String oldPassword,
+                                   @RequestParam(name = "login", defaultValue = "") String login,
+                                   @RequestParam(name = "newPassword", defaultValue = "") String newPassword) {
+        if(oldPassword.isEmpty() || login.isEmpty() || newPassword.isEmpty())
+            return "{\n\t\"status\":\"error\"\n}";
+
+        try {
+            User user = UserRepository.getRepository().getUserByLogin(login);
+            if(user == null || !user.getPassword().equals(oldPassword))
+                return "{\n\t\"status\":\"error\"\n}";
+
+            user.setPassword(newPassword);
+            return "{\n\t\"status\":\"ok\"\n}";
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return "{\n\t\"status\":\"error\"\n}";
+        }
+    }
+
     @GetMapping("/user/task")
     public Task getTask(@RequestParam(value = "login", defaultValue = "null") String login,
                         @RequestParam(value = "password", defaultValue = "null") String pass,

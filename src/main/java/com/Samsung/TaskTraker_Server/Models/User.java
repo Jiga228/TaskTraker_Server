@@ -1,10 +1,13 @@
 package com.Samsung.TaskTraker_Server.Models;
+import com.Samsung.TaskTraker_Server.Repository.DataBase;
+
+import java.sql.SQLException;
 import java.util.Objects;
 
 public class User {
     private final int ID;
     private final String login;
-    private final String password;
+    private String password;
 
     public User(int ID, String login, String password) {
         this.ID = ID;
@@ -22,6 +25,11 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String newPassword) throws SQLException {
+        DataBase.getInstance().UpdatePassword(newPassword, ID);
+        password = newPassword;
     }
 
     @Override
