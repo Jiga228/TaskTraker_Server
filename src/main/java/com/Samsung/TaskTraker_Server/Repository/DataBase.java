@@ -9,7 +9,8 @@ import java.util.*;
 
 public class DataBase {
     private static DataBase instance;
-    private final Connection connection;
+    private Connection connection;
+    private final String login, password;
 
     public void close() {
         try {
@@ -20,13 +21,19 @@ public class DataBase {
         instance = null;
     }
 
-    private DataBase(String login, String pass) {
+    private void OpenConnection() {
         try {
-            connection = DriverManager.getConnection(API_KEYS.DB_URL, login, pass);
+            connection = DriverManager.getConnection(API_KEYS.DB_URL, login, password);
         } catch (SQLException e) {
             System.out.println("[!] DB: " + e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    private DataBase(String login, String password) {
+        this.login = login;
+        this.password = password;
+        OpenConnection();
     }
 
     public static DataBase getInstance() {
@@ -37,6 +44,9 @@ public class DataBase {
     }
 
     public User SaveUser(String login, String password) throws SQLException {
+        if(!connection.isValid(100))
+            OpenConnection();
+
         PreparedStatement saveUser_stmt = connection.prepareStatement("INSERT INTO users(login, password) VALUE (?, ?)");
         saveUser_stmt.setString(1, login);
         saveUser_stmt.setString(2, password);
@@ -51,6 +61,9 @@ public class DataBase {
     }
 
     public void AddTask(Task task, User user) throws SQLException {
+        if(!connection.isValid(100))
+            OpenConnection();
+
         PreparedStatement addTask = connection.prepareStatement("INSERT INTO tasks(ID," +
                                                              " TaskName," +
                                                              " TaskDescription," +
@@ -69,6 +82,9 @@ public class DataBase {
     }
 
     public void UpdateTask(Task task, User user) throws SQLException {
+        if(!connection.isValid(100))
+            OpenConnection();
+
         PreparedStatement addTask = connection.prepareStatement("UPDATE tasks SET TaskName = ?," +
                                                                      " TaskDescription = ?," +
                                                                      " TaskDate = ?," +
@@ -85,6 +101,9 @@ public class DataBase {
     }
 
     public void RemoveTask(long taskID, User user) throws SQLException {
+        if(!connection.isValid(100))
+            OpenConnection();
+
         PreparedStatement remove = connection.prepareStatement("DELETE FROM tasks WHERE ID = ? AND UserOwner = ?");
         remove.setLong(1, taskID);
         remove.setLong(2, user.getID());
@@ -92,6 +111,9 @@ public class DataBase {
     }
 
     public void UpdatePassword(String password, int userID) throws SQLException {
+        if(!connection.isValid(100))
+            OpenConnection();
+
         PreparedStatement update = connection.prepareStatement("UPDATE users SET password = ? WHERE id = ?");
         update.setString(1, password);
         update.setInt(2, userID);
@@ -99,6 +121,9 @@ public class DataBase {
     }
 
     public List<Task> getTaskList(User user) throws SQLException {
+        if(!connection.isValid(100))
+            OpenConnection();
+
         PreparedStatement findTasks = connection.prepareStatement("SELECT * FROM tasks WHERE UserOwner = ?");
         findTasks.setInt(1, user.getID());
         ResultSet result = findTasks.executeQuery();
@@ -117,6 +142,9 @@ public class DataBase {
     }
 
     public User FindUser(String login) throws SQLException {
+        if(!connection.isValid(100))
+            OpenConnection();
+
         PreparedStatement getUser_stmt = connection.prepareStatement("SELECT * FROM users WHERE login = ?");
         getUser_stmt.setString(1, login);
         ResultSet resultSet = getUser_stmt.executeQuery();
