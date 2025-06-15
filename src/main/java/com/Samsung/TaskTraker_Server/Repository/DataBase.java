@@ -47,24 +47,27 @@ public class DataBase {
         if(!connection.isValid(100))
             OpenConnection();
 
-        PreparedStatement saveUser_stmt = connection.prepareStatement("INSERT INTO users(login, password) VALUE (?, ?)");
+        PreparedStatement saveUser_stmt = connection.prepareStatement("INSERT INTO users_v2(login, password) VALUE (?, ?)");
         saveUser_stmt.setString(1, login);
         saveUser_stmt.setString(2, password);
         saveUser_stmt.executeUpdate();
 
-        PreparedStatement findID = connection.prepareStatement("SELECT id FROM users WHERE login = ?");
+        PreparedStatement findID = connection.prepareStatement("SELECT id FROM users_v2 WHERE login = ?");
         findID.setString(1, login);
         ResultSet newID = findID.executeQuery();
 
         newID.next();
-        return new User(newID.getInt(1), login, password);
+        User user = new User(newID.getInt(1), login, password);
+
+        newID.close();
+        return user;
     }
 
     public void AddTask(Task task, User user) throws SQLException {
         if(!connection.isValid(100))
             OpenConnection();
 
-        PreparedStatement addTask = connection.prepareStatement("INSERT INTO tasks(ID," +
+        PreparedStatement addTask = connection.prepareStatement("INSERT INTO tasks_v2(ID," +
                                                              " TaskName," +
                                                              " TaskDescription," +
                                                              " TaskDate," +
@@ -85,7 +88,7 @@ public class DataBase {
         if(!connection.isValid(100))
             OpenConnection();
 
-        PreparedStatement addTask = connection.prepareStatement("UPDATE tasks SET TaskName = ?," +
+        PreparedStatement addTask = connection.prepareStatement("UPDATE tasks_v2 SET TaskName = ?," +
                                                                      " TaskDescription = ?," +
                                                                      " TaskDate = ?," +
                                                                      " TaskTime = ?" +
@@ -104,7 +107,7 @@ public class DataBase {
         if(!connection.isValid(100))
             OpenConnection();
 
-        PreparedStatement remove = connection.prepareStatement("DELETE FROM tasks WHERE ID = ? AND UserOwner = ?");
+        PreparedStatement remove = connection.prepareStatement("DELETE FROM tasks_v2 WHERE ID = ? AND UserOwner = ?");
         remove.setLong(1, taskID);
         remove.setLong(2, user.getID());
         remove.executeUpdate();
@@ -114,7 +117,7 @@ public class DataBase {
         if(!connection.isValid(100))
             OpenConnection();
 
-        PreparedStatement update = connection.prepareStatement("UPDATE users SET password = ? WHERE id = ?");
+        PreparedStatement update = connection.prepareStatement("UPDATE users_v2 SET password = ? WHERE id = ?");
         update.setString(1, password);
         update.setInt(2, userID);
         update.executeUpdate();
@@ -124,7 +127,7 @@ public class DataBase {
         if(!connection.isValid(100))
             OpenConnection();
 
-        PreparedStatement findTasks = connection.prepareStatement("SELECT * FROM tasks WHERE UserOwner = ?");
+        PreparedStatement findTasks = connection.prepareStatement("SELECT * FROM tasks_v2 WHERE UserOwner = ?");
         findTasks.setInt(1, user.getID());
         ResultSet result = findTasks.executeQuery();
 
@@ -138,6 +141,7 @@ public class DataBase {
                                  result.getString(6));  // TaskTime
             taskList.add(task);
         }
+        result.close();
         return taskList;
     }
 
@@ -145,15 +149,18 @@ public class DataBase {
         if(!connection.isValid(100))
             OpenConnection();
 
-        PreparedStatement getUser_stmt = connection.prepareStatement("SELECT * FROM users WHERE login = ?");
+        PreparedStatement getUser_stmt = connection.prepareStatement("SELECT * FROM users_v2 WHERE login = ?");
         getUser_stmt.setString(1, login);
         ResultSet resultSet = getUser_stmt.executeQuery();
-        if(!resultSet.next())
+        if(!resultSet.next()) {
+            resultSet.close();
             return null;
+        }
 
         int id = resultSet.getInt(1);
         String pass = resultSet.getNString(3);
 
+        resultSet.close();
         return new User(id, login, pass);
     }
 }

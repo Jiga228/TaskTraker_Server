@@ -9,6 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,25 @@ public class TaskTrakerServerApplication {
         System.exit(code);
     }
 
+    private static String convertByteArrayToHexString(byte[] arrayBytes) {
+        StringBuilder stringBuffer = new StringBuilder();
+        for (byte arrayByte : arrayBytes) {
+            stringBuffer.append(Integer.toString((arrayByte & 0xff) + 0x100, 16)
+                    .substring(1));
+        }
+        return stringBuffer.toString();
+    }
+
+    private static String getMD5Hash(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] messageDigest = md.digest(input.getBytes());
+            return convertByteArrayToHexString(messageDigest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @GetMapping("/admin/shutdown")
     void shutdown(@RequestParam(name = "password", defaultValue = "null") String password) {
         if(!password.equals(API_KEYS.ADMIN_PASSWORD))
@@ -53,8 +74,9 @@ public class TaskTrakerServerApplication {
             return "{\n\t\"status\":\"error\"\n}";
         else {
             try {
+                String passHash = getMD5Hash(pass);
                 User user = UserRepository.getRepository().getUserByLogin(login);
-                if (user == null || !user.getPassword().equals(pass))
+                if (user == null || !user.getPassword().equals(passHash))
                     return "{\n\t\"status\":\"error\"\n}";
                 else
                     return "{\n\t\"status\":\"ok\"\n}";
@@ -75,7 +97,8 @@ public class TaskTrakerServerApplication {
         else if (login.equals("null") || pass.equals("null"))
             return "{\n\t\"status\":\"error\",\n\t\"token\":\"null\"\n}";
         try {
-            User user = UserRepository.getRepository().AddUser(login, pass);
+            String passHash = getMD5Hash(pass);
+            User user = UserRepository.getRepository().AddUser(login, passHash);
             if(user == null)
                 return "{\n\t\"status\":\"error\"\n}";
 
@@ -94,11 +117,13 @@ public class TaskTrakerServerApplication {
             return "{\n\t\"status\":\"error\"\n}";
 
         try {
+            String passHash = getMD5Hash(oldPassword);
             User user = UserRepository.getRepository().getUserByLogin(login);
-            if(user == null || !user.getPassword().equals(oldPassword))
+            if(user == null || !user.getPassword().equals(passHash))
                 return "{\n\t\"status\":\"error\"\n}";
 
-            user.setPassword(newPassword);
+            passHash = getMD5Hash(newPassword);
+            user.setPassword(passHash);
             return "{\n\t\"status\":\"ok\"\n}";
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -112,9 +137,10 @@ public class TaskTrakerServerApplication {
                         @RequestParam(name = "id") long taskID) {
         if (!login.equals("null") || !pass.equals("null")) {
             try {
+                String passHash = getMD5Hash(pass);
                 User user = UserRepository.getRepository().getUserByLogin(login);
 
-                if (user == null || !user.getPassword().equals(pass))
+                if (user == null || !user.getPassword().equals(passHash))
                     return new Task(0, 0, null, null, null, null);
 
                 List<Task> taskList = DataBase.getInstance().getTaskList(user);
@@ -138,8 +164,9 @@ public class TaskTrakerServerApplication {
             return new ArrayList<>();
         else {
             try {
+                String passHash = getMD5Hash(pass);
                 User user = UserRepository.getRepository().getUserByLogin(login);
-                if (user == null || !user.getPassword().equals(pass))
+                if (user == null || !user.getPassword().equals(passHash))
                     return new ArrayList<>();
                 else
                     return DataBase.getInstance().getTaskList(user);
@@ -156,8 +183,9 @@ public class TaskTrakerServerApplication {
                             @RequestBody Task task) {
         if (!login.equals("null") && !pass.equals("null") && task != null) {
             try {
+                String passHash = getMD5Hash(pass);
                 User user = UserRepository.getRepository().getUserByLogin(login);
-                if (user == null || !user.getPassword().equals(pass))
+                if (user == null || !user.getPassword().equals(passHash))
                     return;
                 DataBase.getInstance().AddTask(task, user);
             } catch (SQLException e) {
@@ -172,8 +200,9 @@ public class TaskTrakerServerApplication {
                             @RequestBody Task task) {
         if (!login.equals("null") && !pass.equals("null") && task != null) {
             try {
+                String passHash = getMD5Hash(pass);
                 User user = UserRepository.getRepository().getUserByLogin(login);
-                if (user == null || !user.getPassword().equals(pass))
+                if (user == null || !user.getPassword().equals(passHash))
                     return;
                 DataBase.getInstance().UpdateTask(task, user);
             } catch (SQLException e) {
@@ -188,8 +217,9 @@ public class TaskTrakerServerApplication {
                                @RequestParam(name = "id", defaultValue = "-1") long id) {
         if (!login.equals("null") && !pass.equals("null") && id != -1) {
             try {
+                String passHash = getMD5Hash(pass);
                 User user = UserRepository.getRepository().getUserByLogin(login);
-                if (user == null || !user.getPassword().equals(pass))
+                if (user == null || !user.getPassword().equals(passHash))
                     return;
                 DataBase.getInstance().RemoveTask(id, user);
             } catch (SQLException e) {
